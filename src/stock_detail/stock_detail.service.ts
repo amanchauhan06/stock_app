@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as csvToJson from 'csvtojson';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { MasterDocument } from './master.model';
 import { StockDetailDocument } from './stock_detail.model';
 
@@ -14,20 +14,18 @@ export class StockDetailService {
     private readonly stockDetailModel: Model<StockDetailDocument>,
   ) {}
   async migrateData() {
-    const allCompanies = await this.masterModel.find({});
-    for (let index = 0; index < allCompanies.length; index++) {
-      const jsonArray = await csvToJson().fromFile(
-        `/Users/amanchauhan/Desktop/archive/FullDataCsv/${allCompanies[index].key}.csv`,
-      );
-      for (let j = 0; j < jsonArray.length; j++) {
-        jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
-        const stockPrice = new this.stockDetailModel({
-          ...jsonArray[j],
-          company: allCompanies[index]._id,
-        });
-        await stockPrice.save();
-        console.log(j);
-      }
+    const jsonArray = await csvToJson().fromFile(
+    //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+      `/Users/amanchauhan/Desktop/archive/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
+    );
+    for (let j = 0; j < jsonArray.length; j++) {
+      jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
+      const stockPrice = new this.stockDetailModel({
+        ...jsonArray[j],
+        company: new Types.ObjectId('62ce6c35cfcd1230db9ab688'),
+      });
+      await stockPrice.save();
+      console.log(j);
     }
   }
 }
