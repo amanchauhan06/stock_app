@@ -16,7 +16,7 @@ export class StockDetailService {
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
-    //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
       `/Users/amanchauhan/Desktop/archive/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
     );
     for (let j = 0; j < jsonArray.length; j++) {
@@ -26,30 +26,30 @@ export class StockDetailService {
         company: new Types.ObjectId('62ce6c35cfcd1230db9ab688'),
       });
       await stockPrice.save();
-      console.log(j);
     }
   }
 
-  public stocks(query) {
-    const {id, name } = query;
+  async stocks(query) {
+    const { id, name } = query;
     let filter = {};
     if (name) {
-    const regExp = new RegExp(name, 'i');
+      const regExp = new RegExp(name, 'i');
       filter = {
-        ...{name: regExp},
-      }
+        ...{ name: regExp },
+      };
     }
-    if(id){
+    if (id) {
       filter = {
         ...filter,
-        ...{company: new Types.ObjectId(id)},
-      }
+        ...{ company: new Types.ObjectId(id) },
+      };
     }
-    return this.masterModel.find(filter);
+    const stockData = await this.masterModel.find(filter);
+    return stockData;
   }
 
-  public stockById(param, query) {
-    let filter = { company: new Types.ObjectId(param.id) };
+  async stockById(param, query) {
+    let filter = {company: new Types.ObjectId(param)};
     const { from, to } = query;
     let fromDate;
     let toDate;
@@ -58,9 +58,10 @@ export class StockDetailService {
       toDate = new Date(to);
       filter = {
         ...filter,
-        ...{ timestamp: { $gte: fromDate, $lte: toDate } },
+        ...{timestamp: { $gte: fromDate, $lte: toDate}},
       };
     }
-    return this.stockDetailModel.find(filter);
+    const stockPrice = await this.stockDetailModel.find(filter)
+    return stockPrice
   }
 }
