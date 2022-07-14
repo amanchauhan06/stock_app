@@ -16,7 +16,7 @@ export class StockDetailService {
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
-    //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
       `/Users/amanchauhan/Desktop/archive/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
     );
     for (let j = 0; j < jsonArray.length; j++) {
@@ -26,24 +26,23 @@ export class StockDetailService {
         company: new Types.ObjectId('62ce6c35cfcd1230db9ab688'),
       });
       await stockPrice.save();
-      console.log(j);
     }
   }
 
   public stocks(query) {
-    const {id, name } = query;
+    const { id, name } = query;
     let filter = {};
     if (name) {
-    const regExp = new RegExp(name, 'i');
+      const regExp = new RegExp(name, 'i');
       filter = {
-        ...{name: regExp},
-      }
+        ...{ name: regExp },
+      };
     }
-    if(id){
+    if (id) {
       filter = {
         ...filter,
-        ...{company: new Types.ObjectId(id)},
-      }
+        ...{ company: new Types.ObjectId(id) },
+      };
     }
     return this.masterModel.find(filter);
   }
