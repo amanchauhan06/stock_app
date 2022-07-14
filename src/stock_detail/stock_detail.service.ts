@@ -29,7 +29,7 @@ export class StockDetailService {
     }
   }
 
-  public stocks(query) {
+  async stocks(query) {
     const { id, name } = query;
     let filter = {};
     if (name) {
@@ -44,11 +44,12 @@ export class StockDetailService {
         ...{ company: new Types.ObjectId(id) },
       };
     }
-    return this.masterModel.find(filter);
+    const stockData = await this.masterModel.find(filter);
+    return stockData;
   }
 
-  public stockById(param, query) {
-    let filter = { company: new Types.ObjectId(param.id) };
+  async stockById(param, query) {
+    let filter = {company: new Types.ObjectId(param)};
     const { from, to } = query;
     let fromDate;
     let toDate;
@@ -57,9 +58,10 @@ export class StockDetailService {
       toDate = new Date(to);
       filter = {
         ...filter,
-        ...{ timestamp: { $gte: fromDate, $lte: toDate } },
+        ...{timestamp: { $gte: fromDate, $lte: toDate}},
       };
     }
-    return this.stockDetailModel.find(filter);
+    const stockPrice = await this.stockDetailModel.find(filter)
+    return stockPrice
   }
 }
