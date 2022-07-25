@@ -18,7 +18,7 @@
 - Run Redis server ` redis-server `
 - To start the project ` npm run start:dev `
 - Connect to the socket through request provided in postman collection (stock_app_socket)
-- After that hit the post api provided in collection (order)
+- After that hit the post api provided in order folder of collection (stock_app)
 
 ## Tech Stack
 
