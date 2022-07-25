@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ExchangeOrderGateway } from './exchange_order/exchange_order.gateway';
 import { ExchangeOrderModule } from './exchange_order/exchange_order.module';
 import { StockDetailModule } from './stock_detail/stock_detail.module';
 
