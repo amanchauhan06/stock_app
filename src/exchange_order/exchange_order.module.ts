@@ -27,7 +27,7 @@ import { ExchangeOrderService } from './exchange_order.service';
     {
       provide: 'REDIS_OPTIONS',
       useValue: {
-        url: 'redis://localhost:6379',
+        url: process.env.REDIS_URL || 'redis://localhost:6379',
       },
     },
     {

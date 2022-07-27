@@ -8,15 +8,15 @@ export class StockDetailEntity {
     @Column()
     timestamp: Date;
     @Column()
-    open: Number;
+    open: number;
     @Column()
-    high: Number;
+    high: number;
     @Column()
-    low: Number;
+    low: number;
     @Column()
-    close: Number;
+    close: number;
     @Column()
-    volume: Number;
-    @ManyToOne(() => MasterEntity, masterEntity => masterEntity.price)
-    company: MasterEntity
+    volume: number;
+    @Column()
+    company: string;
 }

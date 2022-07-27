@@ -22,8 +22,8 @@ export const ormConfig: TypeOrmModuleOptions = {
     password: process.env.POSTGRES_PASSWORD,
     entities: ['dist/src/stock_detail/**/*{.ts,.js}'],
     database: 'postgres',
-    synchronize: true,
-    migrations: ['dist/src/db/migrations/*{.ts,.js}'],
+    synchronize: false,
+    migrations: ['dist/src/stock_detail/migrations/*{.ts,.js}'],
   });
   dataSource.initialize().then(() => {
     {
