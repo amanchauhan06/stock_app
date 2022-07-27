@@ -1,63 +1,41 @@
 import { Injectable } from '@nestjs/common';
-
-export type User = {
-  id: number;
-  name: string;
-  mobile: string;
-  email: string;
-  username: string;
-  password: string;
-  refreshToken: string;
-};
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserDto } from 'src/auth/dto';
+import { Repository } from 'typeorm';
+import { UserEntity } from './entity/user.entity';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [
-    {
-      id: 1,
-      name: 'Leanne Graham',
-      mobile: '92873549872',
-      email: 'leanne@gmail.com',
-      username: 'Bret',
-      password: 'thisIsNotAPassword',
-      refreshToken: '',
-    },
-    {
-      id: 2,
-      name: 'Ervin Howell',
-      mobile: '928735493456',
-      email: 'ervin@gmail.com',
-      username: 'Antonette',
-      password: 'thisIsNotAPassword',
-      refreshToken: '',
-    },
-    {
-      id: 3,
-      name: 'Clementine Bauch',
-      mobile: '928723452645',
-      email: 'clementine@gmail.com',
-      username: 'Samantha',
-      password: 'thisIsNotAPassword',
-      refreshToken: '',
-    },
-  ];
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
 
-  public create(user: User) {
-    this.users.push(user);
-    console.log('created users', this.users);
+  async create(userDto: UserDto): Promise<UserEntity> {
+    const user = new UserEntity();
+    user.name = userDto.name;
+    user.email = userDto.email;
+    user.mobile = userDto.mobile;
+    user.username = userDto.username;
+    user.password = userDto.password;
+    user.refreshToken = userDto.refreshToken;
+    return await this.userRepository.save(user);
   }
 
-  public findOne(username: string): User | undefined {
-    return this.users.find((user) => user.username === username);
+  async findOneByUserName(userName: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { username: userName } });
   }
 
-  public findOneById(id: number): User | undefined {
-    return this.users.find((user) => user.id === id);
+  async findOneById(id: string): Promise<UserEntity> {
+    return await this.userRepository.findOneBy({ id: id });
   }
 
-  public updateUserRefreshTokenHash(user: User, refreshToken: string) {
-    const index = this.users.findIndex((u) => u.id === user.id);
-    this.users[index].refreshToken = refreshToken;
-    console.log('updated user refresh token', this.users[index].refreshToken);
+  async updateUserRefreshTokenHash(
+    user: UserEntity,
+    refreshToken: string,
+  ): Promise<any> {
+    return await this.userRepository.update(user.id, {
+      refreshToken: refreshToken,
+    });
   }
 }

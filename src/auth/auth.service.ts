@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto } from './dto';
-import { randomInt } from 'crypto';
+import { UserEntity } from 'src/users/entity/user.entity';
+import { UserDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +13,7 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userService.findOne(username);
+    const user: UserEntity = await this.userService.findOneByUserName(username);
     if (user && user.password === password) {
       const { password, refreshToken, ...result } = user;
       return result;
@@ -21,12 +21,12 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
+  async login(user: UserEntity) {
     const tokens = await this.updateRefreshTokenHash(user);
     return tokens;
   }
 
-  async refreshToken(userId: number, refreshToken: string) {
+  async refreshToken(userId: string, refreshToken: string) {
     const user = await this.userService.findOneById(userId);
     if (!user) {
       throw new Error('User not found');
@@ -41,36 +41,27 @@ export class AuthService {
     return tokens;
   }
 
-  async register(user: RegisterDto) {
+  async register(user: UserDto) {
     // const hashedPassword = await this.hashData(user.password); //TODO: save hashed password in db
-    const rawUser = {
-      id: randomInt(10, 100),
-      name: user.name,
-      mobile: user.mobile,
-      email: user.email,
-      username: user.username,
-      password: user.password,
-      // password: hashedPassword,
-      refreshToken: '',
-    };
-    const userAlreadyExists = await this.userService.findOne(user.username);
+    const userAlreadyExists = await this.userService.findOneByUserName(
+      user.username,
+    );
     if (userAlreadyExists) {
-      throw new Error("User already exists");
-      
+      throw new Error('User already exists');
     }
-    this.userService.create(rawUser);
-    const tokens = await this.updateRefreshTokenHash(rawUser);
+    const userEntityResponse = await this.userService.create(user);
+    const tokens = await this.updateRefreshTokenHash(userEntityResponse);
     return tokens;
   }
 
-  async updateRefreshTokenHash(user: any) {
+  async updateRefreshTokenHash(user: UserEntity) {
     const tokens = await this.getTokens(user);
     const hashedRefreshToken = await this.hashData(tokens.refreshToken);
-    this.userService.updateUserRefreshTokenHash(user, hashedRefreshToken);
+    await this.userService.updateUserRefreshTokenHash(user, hashedRefreshToken);
     return tokens;
   }
 
-  async getTokens(user: any) {
+  async getTokens(user: UserEntity) {
     const payload = {
       sub: user.id,
       username: user.username,

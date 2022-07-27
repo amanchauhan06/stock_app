@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto';
+import { RegisterDto, UserDto } from './dto';
 import { LocalAuthGuard } from './passport';
 
 @Controller('auth')
@@ -30,8 +30,16 @@ export class AuthController {
   @Post('register')
   async register(@Body() body: RegisterDto, @Response() res): Promise<any> {
     try {
-      const token = await this.authService.register(body);
-      const {password, ...user} = body;
+      const reqBody: UserDto = {
+        name: body.name,
+        mobile: body.mobile,
+        email: body.email,
+        username: body.username,
+        password: body.password,
+        refreshToken: '',
+      };
+      const token = await this.authService.register(reqBody);
+      const { password, ...user } = body;
       return res.status(201).json({
         msg: 'Registration successful',
         user: user,
@@ -57,12 +65,4 @@ export class AuthController {
       ...token,
     });
   }
-
-  // @UseGuards(AuthGuard('jwt-strategy'))
-  // @Get('me')
-  // async me(@Request() req, @Response() res): Promise<any> {
-  //   return res.status(200).json({
-  //     msg: 'hello world',
-  //   });
-  // }
 }
