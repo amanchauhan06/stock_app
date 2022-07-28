@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiHeader } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/passport';
 import { StockDataQueryDTO } from './stock_data.dto';
@@ -8,6 +8,7 @@ import { StockDetailService } from './stock_detail.service';
 import { StockPriceQueryDTO } from './stock_price.dto';
 
 @ApiHeader({ name: 'app_secret', required: true, description: 'Custom Header' })
+@ApiBearerAuth('defaultBearerAuth')
 @Controller('stock-detail')
 export class StockDetailController {
   constructor(private readonly stockDetailService: StockDetailService) {}
@@ -17,6 +18,8 @@ export class StockDetailController {
     return this.stockDetailService.migrateData();
   }
 
+  @ApiOperation({ summary: 'To get all the stocks' })
+  @ApiResponse({ status: 200, description: 'All stocks fetched successfully' })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('stocks')
   async stocks(@Query() query: StockDataQueryDTO, @Res() res: Response) {
@@ -30,6 +33,8 @@ export class StockDetailController {
     }
   }
 
+  @ApiOperation({ summary: 'To get price of a particular stock' })
+  @ApiResponse({ status: 200, description: 'Price fetched successfully' })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('price/:id')
   async stockById(
