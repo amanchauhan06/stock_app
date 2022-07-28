@@ -1,16 +1,13 @@
 import { Inject } from '@nestjs/common';
 import {
-    ConnectedSocket, WebSocketGateway,
-    WebSocketServer
+  ConnectedSocket, WebSocketGateway
 } from '@nestjs/websockets';
 import Redis from 'ioredis';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 export type MySocket = Socket & { nickname: string };
 
 @WebSocketGateway({cors: true})
 export class ExchangeOrderGateway {
-  @WebSocketServer()
-  server: Server;
   constructor(@Inject('REDIS_CLIENT2') private readonly redis: Redis) {}
 
     handleConnection(@ConnectedSocket() socket: MySocket) {
@@ -19,7 +16,7 @@ export class ExchangeOrderGateway {
         console.log('Inside socket.on');
         this.redis.subscribe('trade', (data) => {
           console.log('This is message ' + data);
-          this.server.emit('trade', data);
+          socket.emit('trade', data);
         });
       });
     }
