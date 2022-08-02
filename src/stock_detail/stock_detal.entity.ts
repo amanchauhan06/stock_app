@@ -17,6 +17,6 @@ export class StockDetailEntity {
     close: number;
     @Column()
     volume: number;
-    @Column()
-    company: string;
+    @ManyToOne(() => MasterEntity, (masterEntity) => masterEntity.price)
+    company: MasterEntity;
 }
