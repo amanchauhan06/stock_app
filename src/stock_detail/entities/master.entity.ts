@@ -4,10 +4,14 @@ import {
   Column,
   Entity,
   Generated,
+  JoinColumn,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { MasterAboutEntity } from './master.about.entity';
+import { MasterFundamentalsEntity } from './master.fundamentals.entity';
 import { StockDetailEntity } from './stock_detal.entity';
 
 @Entity()
@@ -36,4 +40,8 @@ export class MasterEntity {
   price: StockDetailEntity[];
   @ManyToMany(() => UserEntity)
   user: Promise<UserEntity[]>;
+  @OneToOne(() => MasterFundamentalsEntity, { cascade: true })
+  fundamentals: MasterFundamentalsEntity;
+  @OneToOne(() => MasterAboutEntity, { cascade: true })
+  about: MasterAboutEntity;
 }

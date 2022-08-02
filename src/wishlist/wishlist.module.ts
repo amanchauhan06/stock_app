@@ -5,13 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersService } from 'src/users/users.service';
 import { UserEntity } from 'src/users/entity/user.entity';
-import { MasterEntity } from 'src/stock_detail/master.entity';
-import { UserEntityCompaniesMaster } from './entities/user.entity.companies.master.entity';
+import { MasterEntity } from 'src/stock_detail/entities/master.entity';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntityCompaniesMaster, UserEntity, MasterEntity]),
+    TypeOrmModule.forFeature([UserEntity, MasterEntity]),
   ],
   controllers: [WishlistController],
   providers: [WishlistService, UsersService],

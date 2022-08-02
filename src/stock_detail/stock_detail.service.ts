@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as csvToJson from 'csvtojson';
 import { Model, Types } from 'mongoose';
-import { MasterDocument } from './master.model';
+import { dataSource } from 'ormconfig';
+import { Repository } from 'typeorm';
+import { MasterAboutEntity } from './entities/master.about.entity';
+import { MasterEntity } from './entities/master.entity';
+import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
+import { MasterDocument } from './entities/master.model';
 import { StockDetailDocument } from './stock_detail.model';
 
 @Injectable()
@@ -12,6 +18,12 @@ export class StockDetailService {
     private readonly masterModel: Model<MasterDocument>,
     @InjectModel('stockDetail')
     private readonly stockDetailModel: Model<StockDetailDocument>,
+    @InjectRepository(MasterEntity)
+    private readonly masterRepository: Repository<MasterEntity>,
+    @InjectRepository(MasterFundamentalsEntity)
+    private readonly masterFundamentalsEntity: Repository<MasterFundamentalsEntity>,
+    @InjectRepository(MasterAboutEntity)
+    private readonly masterAboutEntity: Repository<MasterAboutEntity>,
   ) {}
 
   async migrateData() {
@@ -27,6 +39,35 @@ export class StockDetailService {
       });
       await stockPrice.save();
     }
+  }
+
+  async addStockFundamentals(id: string) {
+    var company = await this.masterRepository.findOneBy({ id: id });
+    var fundamental = new MasterFundamentalsEntity();
+    fundamental.marketCap = '51352';
+    fundamental.roe = '39.75';
+    fundamental.peRatio = '77.5';
+    fundamental.pbRatio = '1.5';
+    fundamental.eps = '8.25';
+    fundamental.debtToEquity = '0.07';
+    fundamental.industryPE = '0.5';
+    fundamental.bookValue = '23.55';
+    fundamental.faceValue = '2';
+    fundamental.dividendYield = '0.39';
+    fundamental.company = company;
+    return await this.masterFundamentalsEntity.save(fundamental);
+  }
+
+  async addAboutStock(id: string) {
+    var company = await this.masterRepository.findOneBy({ id: id });
+    var about = new MasterAboutEntity();
+    about.description =
+      'Indian Railway Catering and Tourism Corporation (IRCTC) is an Indian public sector undertaking that provides ticketing, catering, and tourism services for the Indian Railways. It was initially wholly owned by the Government of India and operated under the administrative control of the Ministry of Railways, but has been listed on the National Stock Exchange since 2019, with the Government continuing to hold majority ownership';
+    about.parent = 'Indian Railway Catering & Tourism Corporation';
+    about.founded = '1999';
+    about.managingDirector = 'Smt. Rajni Hasija';
+    about.company = company;
+    return await this.masterAboutEntity.save(about);
   }
 
   async stocks(query) {
@@ -127,8 +168,6 @@ export class StockDetailService {
       };
     }
 
-    console.log('this is the filter', filter);
-
     var aggregationArray = [];
     var project = {
       open: { $round: ['$open', 2] },
@@ -172,5 +211,21 @@ export class StockDetailService {
       ...aggregationArray,
     ]);
     return stockPrice;
+  }
+
+  async getStockFundamentals(id: string) {
+    return await dataSource.getRepository(MasterFundamentalsEntity).find({
+      relations: {
+        company: true,
+      },
+    });
+  }
+
+  async getAboutStock(id: string) {
+    return await dataSource.getRepository(MasterAboutEntity).find({
+      relations: {
+        company: true,
+      },
+    });
   }
 }

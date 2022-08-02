@@ -1,4 +1,4 @@
-import { MasterEntity } from 'src/stock_detail/master.entity';
+import { MasterEntity } from 'src/stock_detail/entities/master.entity';
 import {
   Column,
   Entity,

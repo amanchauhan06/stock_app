@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { dataSource } from 'ormconfig';
 import { UserDto } from 'src/auth/dto';
-import { MasterEntity } from 'src/stock_detail/master.entity';
+import { MasterEntity } from 'src/stock_detail/entities/master.entity';
 import { getConnection, Repository } from 'typeorm';
 import { UserEntity } from './entity/user.entity';
 

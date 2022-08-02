@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { dataSource } from 'ormconfig';
-import { MasterEntity } from 'src/stock_detail/master.entity';
+import { MasterEntity } from 'src/stock_detail/entities/master.entity';
 import { UserEntity } from 'src/users/entity/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
