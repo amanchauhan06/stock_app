@@ -9,6 +9,7 @@ import { MasterAboutEntity } from './entities/master.about.entity';
 import { MasterEntity } from './entities/master.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
 import { MasterDocument } from './entities/master.model';
+import { StockDetailEntity } from './entities/stock_detal.entity';
 import { StockDetailDocument } from './stock_detail.model';
 
 @Injectable()
@@ -24,21 +25,54 @@ export class StockDetailService {
     private readonly masterFundamentalsEntity: Repository<MasterFundamentalsEntity>,
     @InjectRepository(MasterAboutEntity)
     private readonly masterAboutEntity: Repository<MasterAboutEntity>,
+    @InjectRepository(StockDetailEntity)
+    private readonly stockEntity: Repository<StockDetailEntity>,
   ) {}
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
       //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
-      `/Users/amanchauhan/Desktop/archive/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
+      `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
     );
-    for (let j = 0; j < jsonArray.length; j++) {
-      jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
-      const stockPrice = new this.stockDetailModel({
-        ...jsonArray[j],
-        company: new Types.ObjectId('62ce6c35cfcd1230db9ab688'),
-      });
-      await stockPrice.save();
-    }
+    // for (let j = 101453; j < jsonArray.length; j++) {
+    //   const stockPrice = new StockDetailEntity();
+    //   stockPrice.timestamp = jsonArray[j].timestamp;
+    //   stockPrice.open = jsonArray[j].open === '' ? 0 :parseInt(jsonArray[j].open);
+    //   stockPrice.high =jsonArray[j].high === '' ?0: parseInt(jsonArray[j].high);
+    //   stockPrice.low = jsonArray[j].low === '' ? 0 :parseInt(jsonArray[j].low);
+    //   stockPrice.close = jsonArray[j].close === '' ? 0 :parseInt(jsonArray[j].close);
+    //   stockPrice.volume = jsonArray[j].volume === '' ? 0 :parseInt(jsonArray[j].volume);
+    //   stockPrice.company = '39372610-cdf3-4e71-98d6-a48465e2bb52';
+    //   console.log(j);
+    //   jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
+    // }
+    await this.stockEntity
+      .createQueryBuilder()
+      .insert()
+      .into(StockDetailEntity)
+      .values(jsonArray)
+      .execute();
+
+    /* Migration For the Master CSV */
+
+    // const jsonArray = await csvToJson().fromFile(
+    //   //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+    //   `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/master.csv`,
+    // );
+    // for (let j = 0; j <jsonArray.length ; j++) {
+    //   // jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
+    //   const master = new MasterEntity();
+    //   master.tradingsymbol = jsonArray[j].tradingsymbol;
+    //   master.name = jsonArray[j].name;
+    //   master.instrument_type = jsonArray[j].instrument_type;
+    //   master.segment = jsonArray[j].segment;
+    //   master.exchange = jsonArray[j].exchange;
+    //   master.data_type = jsonArray[j].data_type;
+    //   master.key = jsonArray[j].key;
+    //   master.from = jsonArray[j].from;
+    //   master.to = jsonArray[j].to;
+    //   await this.master.save(master);
+    // }
   }
 
   async addStockFundamentals(id: string) {
