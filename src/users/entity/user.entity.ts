@@ -1,7 +1,16 @@
-import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { MasterEntity } from 'src/stock_detail/master.entity';
+import {
+  Column,
+  Entity,
+  Generated,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
-export class UserEntity{
+export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column()
@@ -16,4 +25,7 @@ export class UserEntity{
   password: string;
   @Column()
   refreshToken: string;
+  @ManyToMany(() => MasterEntity)
+  @JoinTable()
+  companies: Promise<MasterEntity[]>;
 }

@@ -1,8 +1,17 @@
-import { Column, Entity, Generated, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { StockDetailEntity } from "./stock_detal.entity";
+import { UserEntity } from 'src/users/entity/user.entity';
+
+import {
+  Column,
+  Entity,
+  Generated,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { StockDetailEntity } from './stock_detal.entity';
 
 @Entity()
-export class MasterEntity{
+export class MasterEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
   @Column()
@@ -24,5 +33,7 @@ export class MasterEntity{
   @Column()
   to: String;
   @OneToMany(() => StockDetailEntity, (entity) => entity.company)
-    price: StockDetailEntity[]
+  price: StockDetailEntity[];
+  @ManyToMany(() => UserEntity)
+  user: Promise<UserEntity[]>;
 }

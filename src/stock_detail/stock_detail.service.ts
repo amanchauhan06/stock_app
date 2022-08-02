@@ -50,42 +50,126 @@ export class StockDetailService {
 
   async stockById(param, query) {
     let filter = { company: new Types.ObjectId(param) };
-    const { from, to } = query;
-    let fromDate;
-    let toDate;
-    if (from && to) {
-      fromDate = new Date(from);
-      toDate = new Date(to);
+    const { duration } = query;
+    let maxDate;
+    let minDate;
+    let timeInterval;
+    let timePeriod;
+    if (duration) {
+      maxDate = new Date('2020-10-12T09:00:00.000Z');
+      switch (duration) {
+        case 'day':
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'week':
+          timeInterval = 5;
+          timePeriod = 'minute';
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth(),
+            maxDate.getDate() - 7,
+          );
+          break;
+        case 'month':
+          timeInterval = 30;
+          timePeriod = 'minute';
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth() - 1,
+            maxDate.getDate(),
+          );
+          break;
+        case 'year':
+          timeInterval = 1;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 1,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'three-year':
+          timeInterval = 3;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 3,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'five-year':
+          timeInterval = 5;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 5,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        default:
+          timeInterval = 7;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 10,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+      }
+
       filter = {
         ...filter,
-        ...{ timestamp: { $gte: fromDate, $lte: toDate } },
+        ...{ timestamp: { $gt: minDate, $lte: maxDate } },
       };
     }
-    var group = {
-      $group: {
-        _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-        open: { $first: '$open' },
-        high: { $max: '$high' },
-        low: { $min: '$low' },
-        close: { $last: '$close' },
-        volume: { $sum: '$volume' },
-        company: { $first: '$company' },
-      },
+
+    console.log('this is the filter', filter);
+
+    var aggregationArray = [];
+    var project = {
+      open: { $round: ['$open', 2] },
+      high: { $round: ['$high', 2] },
+      low: { $round: ['$low', 2] },
+      close: { $round: ['$close', 2] },
+      volume: { $round: ['$volume', 0] },
+      company: { $toString: '$company' },
     };
-    const stockPrice = await this.stockDetailModel.aggregate([
-      { $match: filter },
-      group,
-      {
-        $project: {
-          open: { $round: ['$open', 2] },
-          high: { $round: ['$high', 2] },
-          low: { $round: ['$low', 2] },
-          close: { $round: ['$close', 2] },
-          volume: { $round: ['$volume', 0] },
-          company: { $toString: '$company' },
+
+    aggregationArray.push({ $match: filter });
+    if (duration != 'day') {
+      aggregationArray.push({
+        $group: {
+          _id: {
+            $dateTrunc: {
+              date: '$timestamp',
+              unit: timePeriod,
+              binSize: timeInterval,
+            },
+          },
+          open: { $first: '$open' },
+          high: { $max: '$high' },
+          low: { $min: '$low' },
+          close: { $last: '$close' },
+          volume: { $sum: '$volume' },
+          company: { $first: '$company' },
         },
+      });
+    } else {
+      project['_id'] = '$timestamp';
+    }
+
+    aggregationArray.push(
+      {
+        $project: project,
       },
       { $sort: { _id: 1 } },
+    );
+    const stockPrice = await this.stockDetailModel.aggregate([
+      ...aggregationArray,
     ]);
     return stockPrice;
   }

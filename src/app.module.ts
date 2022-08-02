@@ -6,6 +6,7 @@ import { ExchangeOrderModule } from './exchange_order/exchange_order.module';
 import { StockDetailModule } from './stock_detail/stock_detail.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
     ExchangeOrderModule,
     UsersModule,
     AuthModule,
+    WishlistModule,
   ],
 })
 export class AppModule {}

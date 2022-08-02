@@ -22,6 +22,7 @@ export const dataSource: DataSource = new DataSource({
   entities: [
     'dist/src/stock_detail/**/*{.ts,.js}',
     'dist/src/users/**/*{.ts,.js}',
+    'dist/src/wishlist/**/*{.ts,.js}',
   ],
   database: 'postgres',
   synchronize: false,
