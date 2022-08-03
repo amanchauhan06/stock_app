@@ -8,4 +8,8 @@ export class ExchangeOrderController {
   startTrading() {
     return this.exchangeOrderService.startTrading();
   }
+  @Post('create')
+  createOrder() {
+    return this.exchangeOrderService.createOrder();
+  }
 }
