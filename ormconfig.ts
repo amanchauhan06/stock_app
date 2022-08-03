@@ -10,7 +10,7 @@ export const ormConfig: TypeOrmModuleOptions = {
   autoLoadEntities: true,
   database: process.env.POSTGRES_DATABASE,
   synchronize: false,
-  migrations: ['dist/src/db/migrations/*{.ts,.js}'],
+  migrations: ['dist/src/stock_detail/migrations/*{.ts,.js}'],
 };
 
 export const dataSource: DataSource = new DataSource({
@@ -20,12 +20,13 @@ export const dataSource: DataSource = new DataSource({
   username: process.env.POSTGRES_USERNAME,
   password: process.env.POSTGRES_PASSWORD,
   entities: [
-    'dist/src/stock_detail/**/*{.ts,.js}',
+    'dist/src/stock_detail/entities/**/*{.ts,.js}',
     'dist/src/users/**/*{.ts,.js}',
+    'dist/src/wishlist/**/*{.ts,.js}',
   ],
   database: 'postgres',
   synchronize: false,
-  migrations: ['dist/src/db/migrations/*{.ts,.js}'],
+  migrations: ['dist/src/stock_detail/migrations/*{.ts,.js}'],
 });
 dataSource.initialize().then(() => {
   {

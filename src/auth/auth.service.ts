@@ -80,7 +80,7 @@ export class AuthService {
       accessToken: accessToken,
       refreshToken: refreshToken,
     };
-  }
+  }  
 
   hashData(data: string) {
     return bcrypt.hash(data, 10);

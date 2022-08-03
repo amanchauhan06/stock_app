@@ -1,5 +1,5 @@
-import { MasterEntity } from 'src/stock_detail/master.entity';
-import { StockDetailEntity } from 'src/stock_detail/stock_detal.entity';
+import { MasterEntity } from 'src/stock_detail/entities/master.entity';
+import { StockDetailEntity } from 'src/stock_detail/entities/stock_detal.entity';
 import { DataSource } from 'typeorm';
 
 const dataSource: DataSource = new DataSource({
