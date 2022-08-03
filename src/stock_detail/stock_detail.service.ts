@@ -49,7 +49,7 @@ export class StockDetailService {
   }
 
   async stockById(param, query) {
-    let filter = {company: new Types.ObjectId(param)};
+    let filter = { company: new Types.ObjectId(param) };
     const { from, to } = query;
     let fromDate;
     let toDate;
@@ -58,10 +58,35 @@ export class StockDetailService {
       toDate = new Date(to);
       filter = {
         ...filter,
-        ...{timestamp: { $gte: fromDate, $lte: toDate}},
+        ...{ timestamp: { $gte: fromDate, $lte: toDate } },
       };
     }
-    const stockPrice = await this.stockDetailModel.find(filter)
-    return stockPrice
+    var group = {
+      $group: {
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+        open: { $first: '$open' },
+        high: { $max: '$high' },
+        low: { $min: '$low' },
+        close: { $last: '$close' },
+        volume: { $sum: '$volume' },
+        company: { $first: '$company' },
+      },
+    };
+    const stockPrice = await this.stockDetailModel.aggregate([
+      { $match: filter },
+      group,
+      {
+        $project: {
+          open: { $round: ['$open', 2] },
+          high: { $round: ['$high', 2] },
+          low: { $round: ['$low', 2] },
+          close: { $round: ['$close', 2] },
+          volume: { $round: ['$volume', 0] },
+          company: { $toString: '$company' },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+    return stockPrice;
   }
 }
