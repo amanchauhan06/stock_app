@@ -12,7 +12,7 @@ export class ExchangeOrderService {
     // @InjectRepository(OrderEntity, 'timeScale')
     // private readonly masterRepository: Repository<OrderEntity>,
     // @Inject('REDIS_CLIENT2') private readonly redis: Redis,
-    @Inject('MATCHING_SERVICE') private readonly matchingService: ClientProxy,
+    // @Inject('MATCHING_SERVICE') private readonly matchingService: ClientProxy,
   ) {}
 
   // startTrading() {
