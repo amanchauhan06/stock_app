@@ -25,7 +25,7 @@ async function bootstrap() {
             scheme: 'bearer',
             bearerFormat: 'JWT',
           },
-          value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YmEzMWE3MC1hMzk4LTRkZmMtOWYzZi0xYzMzZTlhMWYxZWYiLCJ1c2VybmFtZSI6InJvaGl0cHJhamFwYXRpIiwiaWF0IjoxNjU5MDA5ODAxLCJleHAiOjE2NTkwMTA3MDF9.A6vQvhoez2_nE3uDAbgEfN_SkaAiJ2IoEWL9i0WNZiE',
+          value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YmEzMWE3MC1hMzk4LTRkZmMtOWYzZi0xYzMzZTlhMWYxZWYiLCJ1c2VybmFtZSI6InJvaGl0cHJhamFwYXRpIiwiaWF0IjoxNjU5NTI5NDU5LCJleHAiOjE2NjA0Mjk0NTl9.dHhHHlM0palDC0dAbTWcYozqTP-q_vEZWmVUTdZa66s',
         },
       },
     },
