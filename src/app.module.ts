@@ -12,7 +12,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot(ormConfig),
-    TypeOrmModule.forRoot(ormConfigTimeScale),
+    // TypeOrmModule.forRoot(ormConfigTimeScale),
     MongooseModule.forRoot(process.env.MONGO_DB_CONNECTION_STRING),
     StockDetailModule,
     ExchangeOrderModule,
