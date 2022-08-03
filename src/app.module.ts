@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormConfig } from '../ormconfig';
-import { ormConfigTimeScale } from '../timescaleconfig';
 import { AuthModule } from './auth/auth.module';
 import { ExchangeOrderModule } from './exchange_order/exchange_order.module';
 import { StockDetailModule } from './stock_detail/stock_detail.module';
