@@ -9,8 +9,8 @@ import { OrderEntity } from './entities/order_entity';
 @Injectable()
 export class ExchangeOrderService {
   constructor(
-    @InjectRepository(OrderEntity, 'timeScale')
-    private readonly masterRepository: Repository<OrderEntity>,
+    // @InjectRepository(OrderEntity, 'timeScale')
+    // private readonly masterRepository: Repository<OrderEntity>,
     // @Inject('REDIS_CLIENT2') private readonly redis: Redis,
     @Inject('MATCHING_SERVICE') private readonly matchingService: ClientProxy,
   ) {}
@@ -25,14 +25,14 @@ export class ExchangeOrderService {
   //   );
   // }
 
-  createOrder() {
-    let order = new OrderEntity();
-    order.id = randomUUID();
-    order.price = 10;
-    order.last_price = 10;
-    order.traded_quantity = 10;
-    order.name = 'test';
-    order.updated_at = new Date();
-    return this.masterRepository.save(order);
-  }
+  // createOrder() {
+  //   let order = new OrderEntity();
+  //   order.id = randomUUID();
+  //   order.price = 10;
+  //   order.last_price = 10;
+  //   order.traded_quantity = 10;
+  //   order.name = 'test';
+  //   order.updated_at = new Date();
+  //   return this.masterRepository.save(order);
+  // }
 }
