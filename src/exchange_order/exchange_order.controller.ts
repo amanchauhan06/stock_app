@@ -6,7 +6,7 @@ export class ExchangeOrderController {
 
   @Post()
   startTrading() {
-    return this.exchangeOrderService.startTrading();
+    // return this.exchangeOrderService.startTrading();
   }
   @Post('create')
   createOrder() {

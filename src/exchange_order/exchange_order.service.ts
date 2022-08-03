@@ -11,18 +11,19 @@ export class ExchangeOrderService {
   constructor(
     @InjectRepository(OrderEntity, 'timeScale')
     private readonly masterRepository: Repository<OrderEntity>,
-    @Inject('REDIS_CLIENT2') private readonly redis: Redis,
+    // @Inject('REDIS_CLIENT2') private readonly redis: Redis,
     @Inject('MATCHING_SERVICE') private readonly matchingService: ClientProxy,
   ) {}
-  startTrading() {
-    this.redis.subscribe('trade', (data) => {
-      console.log('This is message ' + data);
-    });
-    return this.matchingService.send(
-      'startTrading',
-      'Hello from the emit part',
-    );
-  }
+
+  // startTrading() {
+  //   this.redis.subscribe('trade', (data) => {
+  //     console.log('This is message ' + data);
+  //   });
+  //   return this.matchingService.send(
+  //     'startTrading',
+  //     'Hello from the emit part',
+  //   );
+  // }
 
   createOrder() {
     let order = new OrderEntity();

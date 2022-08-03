@@ -56,6 +56,7 @@ export class StockDetailController {
   @ApiResponse({ status: 200, description: 'All stocks fetched successfully' })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('stocks')
+  @ApiBearerAuth('defaultBearerAuth')
   async stocks(@Query() query: StockDataQueryDTO, @Res() res: Response) {
     const stocksValue = await this.stockDetailService.stocks(query);
     if (!stocksValue || stocksValue.length == 0) {
@@ -71,6 +72,7 @@ export class StockDetailController {
   @ApiResponse({ status: 200, description: 'Price fetched successfully' })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('price/:id')
+  @ApiBearerAuth('defaultBearerAuth')
   async stockById(
     @Param('id') id: String,
     @Query() query: StockPriceQueryDTO,
@@ -93,6 +95,7 @@ export class StockDetailController {
   })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('fundamentals/:id')
+  @ApiBearerAuth('defaultBearerAuth')
   async stockFundamentals(@Param('id') id: string, @Res() res: Response) {
     const stockDetails = await this.stockDetailService.getStockFundamentals(id);
     if (!stockDetails || stockDetails.length == 0) {
@@ -111,6 +114,7 @@ export class StockDetailController {
   })
   @UseGuards(AuthGuard('jwt-strategy'))
   @Get('about/:id')
+  @ApiBearerAuth('defaultBearerAuth')
   async aboutStock(@Param('id') id: string, @Res() res: Response) {
     const stockDetails = await this.stockDetailService.getAboutStock(id);
     if (!stockDetails || stockDetails.length == 0) {

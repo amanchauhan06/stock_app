@@ -14,37 +14,37 @@ import { ExchangeOrderService } from './exchange_order.service';
     MongooseModule.forFeature([
       { name: 'exchangeOrder', schema: ExchangeOrderRequestSchema },
     ]),
-    TypeOrmModule.forFeature([OrderEntity], 'timeScale'),
-    ClientsModule.register([
-      {
-        name: 'MATCHING_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          url: process.env.REDIS_URL||'redis://localhost:6379',
-        },
-      },
-    ]),
+    // TypeOrmModule.forFeature([OrderEntity], 'timeScale'),
+    // ClientsModule.register([
+    //   {
+    //     name: 'MATCHING_SERVICE',
+    //     transport: Transport.REDIS,
+    //     options: {
+    //       url: process.env.REDIS_URL||'redis://localhost:6379',
+    //     },
+    //   },
+    // ]),
   ],
   controllers: [ExchangeOrderController],
   providers: [
-    {
-      provide: 'REDIS_OPTIONS',
-      useValue: {
-        url: process.env.REDIS_URL || 'redis://localhost:6379',
-      },
-    },
-    {
-      inject: ['REDIS_OPTIONS'],
-      provide: 'REDIS_CLIENT2',
-      useFactory: async (options: { url: string }) => {
-        const client = createClient(options);
-        await client.connect();
-        return client;
-      },
-    },
+    // {
+    //   provide: 'REDIS_OPTIONS',
+    //   useValue: {
+    //     url: process.env.REDIS_URL || 'redis://localhost:6379',
+    //   },
+    // },
+    // {
+    //   inject: ['REDIS_OPTIONS'],
+    //   provide: 'REDIS_CLIENT2',
+    //   useFactory: async (options: { url: string }) => {
+    //     const client = createClient(options);
+    //     await client.connect();
+    //     return client;
+    //   },
+    // },
     ExchangeOrderService,
     ExchangeOrderGateway,
   ],
-  exports: ['REDIS_CLIENT2'],
+  // exports: ['REDIS_CLIENT2'],
 })
 export class ExchangeOrderModule {}
