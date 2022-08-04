@@ -5,6 +5,8 @@ import * as csvToJson from 'csvtojson';
 import { Model, Types } from 'mongoose';
 import { dataSource } from 'ormconfig';
 import { Repository } from 'typeorm';
+import { StockDataQueryDTO } from './dto/stock_data.dto';
+import { StockPriceQueryDTO } from './dto/stock_price.dto';
 import { MasterAboutEntity } from './entities/master.about.entity';
 import { MasterEntity } from './entities/master.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
@@ -104,7 +106,7 @@ export class StockDetailService {
     return await this.masterAboutEntity.save(about);
   }
 
-  async stocks(query) {
+  async stocks(query: StockDataQueryDTO) {
     const { id, name } = query;
     let filter = {};
     if (name) {
@@ -123,13 +125,13 @@ export class StockDetailService {
     return stockData;
   }
 
-  async stockById(param, query) {
+  async stockById(param: string, query: StockPriceQueryDTO) {
     let filter = { company: new Types.ObjectId(param) };
     const { duration } = query;
-    let maxDate;
-    let minDate;
-    let timeInterval;
-    let timePeriod;
+    let maxDate: Date;
+    let minDate: Date;
+    let timeInterval: number;
+    let timePeriod: string;
     if (duration) {
       maxDate = new Date('2020-10-12T09:00:00.000Z');
       switch (duration) {
@@ -235,6 +237,127 @@ export class StockDetailService {
       project['_id'] = '$timestamp';
     }
 
+    aggregationArray.push(
+      {
+        $project: project,
+      },
+      { $sort: { _id: 1 } },
+    );
+    const stockPrice = await this.stockDetailModel.aggregate([
+      ...aggregationArray,
+    ]);
+    return stockPrice;
+  }
+
+  async candlestickStockPriceById(param: string, query: StockPriceQueryDTO) {
+    let filter = { company: new Types.ObjectId(param) };
+    const { duration } = query;
+    let maxDate: Date;
+    let minDate: Date;
+    let timeInterval: number;
+    let timePeriod: string;
+    if (duration) {
+      maxDate = new Date('2020-10-12T09:00:00.000Z');
+      switch (duration) {
+        case 'day':
+          timeInterval = 5;
+          timePeriod = 'minute';
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'week':
+          timeInterval = 30;
+          timePeriod = 'minute';
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth(),
+            maxDate.getDate() - 7,
+          );
+          break;
+        case 'month':
+          timeInterval = 2;
+          timePeriod = 'hour';
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth() - 1,
+            maxDate.getDate(),
+          );
+          break;
+        case 'year':
+          timeInterval = 5;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 1,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'three-year':
+          timeInterval = 15;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 3,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        case 'five-year':
+          timeInterval = 25;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 5,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        default:
+          timeInterval = 25;
+          timePeriod = 'day';
+          minDate = new Date(
+            maxDate.getFullYear() - 10,
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+      }
+
+      filter = {
+        ...filter,
+        ...{ timestamp: { $gt: minDate, $lte: maxDate } },
+      };
+    }
+
+    var aggregationArray = [];
+    var project = {
+      open: { $round: ['$open', 2] },
+      high: { $round: ['$high', 2] },
+      low: { $round: ['$low', 2] },
+      close: { $round: ['$close', 2] },
+      volume: { $round: ['$volume', 0] },
+      company: { $toString: '$company' },
+    };
+    aggregationArray.push({ $match: filter });
+    aggregationArray.push({
+      $group: {
+        _id: {
+          $dateTrunc: {
+            date: '$timestamp',
+            unit: timePeriod,
+            binSize: timeInterval,
+          },
+        },
+        open: { $first: '$open' },
+        high: { $max: '$high' },
+        low: { $min: '$low' },
+        close: { $last: '$close' },
+        volume: { $sum: '$volume' },
+        company: { $first: '$company' },
+        date: { $push: '$timestamp' },
+      },
+    });
     aggregationArray.push(
       {
         $project: project,
