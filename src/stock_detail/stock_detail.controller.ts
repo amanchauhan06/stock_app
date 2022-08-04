@@ -74,11 +74,34 @@ export class StockDetailController {
   @Get('price/:id')
   @ApiBearerAuth('defaultBearerAuth')
   async stockById(
-    @Param('id') id: String,
+    @Param('id') id: string,
     @Query() query: StockPriceQueryDTO,
     @Res() res: Response,
   ) {
     const stocksPriceValue = await this.stockDetailService.stockById(id, query);
+    if (!stocksPriceValue || stocksPriceValue.length == 0) {
+      res
+        .status(404)
+        .json({ status: 'Failed', message: 'No Stock Data Found' });
+    } else if (stocksPriceValue) {
+      res.status(200).json({ status: 'Success', data: stocksPriceValue });
+    }
+  }
+
+  @ApiOperation({
+    summary: 'To get price of a particular stock for candlestick',
+  })
+  @ApiResponse({ status: 200, description: 'Price fetched successfully' })
+  @UseGuards(AuthGuard('jwt-strategy'))
+  @Get('price/candlestick/:id')
+  @ApiBearerAuth('defaultBearerAuth')
+  async candlestickStockPriceById(
+    @Param('id') id: string,
+    @Query() query: StockPriceQueryDTO,
+    @Res() res: Response,
+  ) {
+    const stocksPriceValue =
+      await this.stockDetailService.candlestickStockPriceById(id, query);
     if (!stocksPriceValue || stocksPriceValue.length == 0) {
       res
         .status(404)
