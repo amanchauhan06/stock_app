@@ -12,7 +12,7 @@ export const ormConfigTimeScale: TypeOrmModuleOptions = {
         'dist/src/exchange_order/entities/**/*{.ts,.js}',
       ],
     database: process.env.TIMESCALE_DATABASE,
-    synchronize: true,
+    synchronize: false,
     migrations: ['dist/src/exchange_order/migrations/*{.ts,.js}'],
   };
   

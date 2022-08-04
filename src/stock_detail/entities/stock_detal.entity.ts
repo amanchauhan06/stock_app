@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Double, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MasterEntity } from "./master.entity";
 
 @Entity()
@@ -7,14 +7,14 @@ export class StockDetailEntity {
     id: string;
     @Column()
     timestamp: Date;
-    @Column()
-    open: number;
-    @Column()
-    high: number;
-    @Column()
-    low: number;
-    @Column()
-    close: number;
+    @Column({type: 'float',})
+    open: Double;
+    @Column({type: 'float',})
+    high: Double;
+    @Column({type: 'float',})
+    low: Double;
+    @Column({type: 'float',})
+    close: Double;
     @Column()
     volume: number;
     @ManyToOne(() => MasterEntity, (masterEntity) => masterEntity.price)
