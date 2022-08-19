@@ -34,36 +34,38 @@ export class StockDetailService {
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
-      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
-      `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/IRCTC__EQ__NSE__NSE__MINUTE.csv`,
+      `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/MRF__EQ__NSE__NSE__MINUTE.csv`,
     );
-    // for (let j = 101453; j < jsonArray.length; j++) {
-    //   const stockPrice = new StockDetailEntity();
-    //   stockPrice.timestamp = jsonArray[j].timestamp;
-    //   stockPrice.open = jsonArray[j].open === '' ? 0 :parseInt(jsonArray[j].open);
-    //   stockPrice.high =jsonArray[j].high === '' ?0: parseInt(jsonArray[j].high);
-    //   stockPrice.low = jsonArray[j].low === '' ? 0 :parseInt(jsonArray[j].low);
-    //   stockPrice.close = jsonArray[j].close === '' ? 0 :parseInt(jsonArray[j].close);
-    //   stockPrice.volume = jsonArray[j].volume === '' ? 0 :parseInt(jsonArray[j].volume);
-    //   stockPrice.company = '39372610-cdf3-4e71-98d6-a48465e2bb52';
-    //   console.log(j);
-    //   jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
-    // }
-    await this.stockEntity
-      .createQueryBuilder()
-      .insert()
-      .into(StockDetailEntity)
-      .values(jsonArray)
-      .execute();
+ 
+    let stockData : StockDetailEntity[] = [];
 
+    let company = await this.masterRepository.findOneBy({
+      id: '52874e78-a1bc-46d7-a0e9-7813efaaf8f9',
+    });
+
+    for (let j = 2; j < jsonArray.length; j++) {
+      console.log(jsonArray[j]);
+      const stockPrice = new StockDetailEntity();
+      stockPrice.timestamp = jsonArray[j].timestamp;
+      stockPrice.open = jsonArray[j].open === '' ? 0 : jsonArray[j].open;
+      stockPrice.high = jsonArray[j].high === '' ? 0 : jsonArray[j].high;
+      stockPrice.low = jsonArray[j].low === '' ? 0 : jsonArray[j].low;
+      stockPrice.close = jsonArray[j].close === '' ? 0 : jsonArray[j].close;
+      stockPrice.volume =
+        jsonArray[j].volume === '' ? 0 : parseInt(jsonArray[j].volume);
+      stockPrice.company = company;
+      jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
+      stockData.push(stockPrice);
+    }
+    await this.stockEntity.save(stockData, { chunk: 1000 });
+    
     /* Migration For the Master CSV */
 
     // const jsonArray = await csvToJson().fromFile(
-    //   //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
     //   `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/master.csv`,
     // );
     // for (let j = 0; j <jsonArray.length ; j++) {
-    //   // jsonArray[j].timestamp = new Date(jsonArray[j].timestamp).toISOString();
     //   const master = new MasterEntity();
     //   master.tradingsymbol = jsonArray[j].tradingsymbol;
     //   master.name = jsonArray[j].name;

@@ -1,0 +1,1 @@
+export const stock_order = {'IRCTC': 'irctc', 'TATA_MOTORS':'tata_mtr', 'MRF':'mrf', 'IRCTC_PUB':'irctc_pub', 'TATA_MOTORS_PUB':'tata_mtr_pub', 'MRF_PUB':'mrf_pub'};
