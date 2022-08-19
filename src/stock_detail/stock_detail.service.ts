@@ -11,7 +11,6 @@ import { StockPriceQueryDTO } from './dto/stock_price.dto';
 import { MasterAboutEntity } from './entities/master.about.entity';
 import { MasterEntity } from './entities/master.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
-import { MasterDocument } from './entities/master.model';
 import { StockDetailEntity } from './entities/stock_detal.entity';
 import { StockDetail, StockDetailDocument } from './stock_detail.model';
 
@@ -20,8 +19,8 @@ export class StockDetailService {
   constructor(
     // @InjectModel('companyMasterData')
     // private readonly masterModel: Model<MasterDocument>,
-    @InjectModel('stockDetail')
-    private readonly stockDetailModel: Model<StockDetailDocument>,
+    // @InjectModel('stockDetail')
+    // private readonly stockDetailModel: Model<StockDetailDocument>,
     @InjectRepository(MasterEntity)
     private readonly masterRepository: Repository<MasterEntity>,
     @InjectRepository(MasterFundamentalsEntity)

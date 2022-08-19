@@ -11,9 +11,9 @@ import { ExchangeOrderService } from './exchange_order.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'exchangeOrder', schema: ExchangeOrderRequestSchema },
-    ]),
+    // MongooseModule.forFeature([
+    //   { name: 'exchangeOrder', schema: ExchangeOrderRequestSchema },
+    // ]),
     TypeOrmModule.forFeature([OrderEntity], 'timeScale'),
     ClientsModule.register([
       {

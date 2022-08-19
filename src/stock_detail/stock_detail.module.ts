@@ -3,7 +3,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppSecretMiddleware } from './app_secret.middleware';
 import { MasterEntity } from './entities/master.entity';
-import { MasterSchema } from './entities/master.model';
 import { StockDetailController } from './stock_detail.controller';
 import { StockDetailSchema } from './stock_detail.model';
 import { StockDetailService } from './stock_detail.service';
@@ -13,18 +12,18 @@ import { MasterAboutEntity } from './entities/master.about.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'companyMasterData', schema: MasterSchema },
-    ]),
+    // MongooseModule.forFeature([
+    //   { name: 'companyMasterData', schema: MasterSchema },
+    // ]),
     TypeOrmModule.forFeature([
       MasterEntity,
       StockDetailEntity,
       MasterFundamentalsEntity,
       MasterAboutEntity
     ]),
-    MongooseModule.forFeature([
-      { name: 'stockDetail', schema: StockDetailSchema },
-    ]),
+    // MongooseModule.forFeature([
+    //   { name: 'stockDetail', schema: StockDetailSchema },
+    // ]),
   ],
   controllers: [StockDetailController],
   providers: [StockDetailService],
