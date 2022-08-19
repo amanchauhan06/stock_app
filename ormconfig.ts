@@ -11,6 +11,7 @@ export const ormConfig: TypeOrmModuleOptions = {
   database: process.env.POSTGRES_DATABASE,
   synchronize: false,
   migrations: ['dist/src/stock_detail/migrations/*{.ts,.js}'],
+  logging: true,
 };
 
 export const dataSource: DataSource = new DataSource({
@@ -27,6 +28,7 @@ export const dataSource: DataSource = new DataSource({
   database: 'postgres',
   synchronize: false,
   migrations: ['dist/src/stock_detail/migrations/*{.ts,.js}'],
+  logging: true,
 });
 dataSource.initialize().then(() => {
   {
