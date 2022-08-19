@@ -2,6 +2,7 @@ import { Inject } from '@nestjs/common';
 import { ConnectedSocket, WebSocketGateway } from '@nestjs/websockets';
 import Redis from 'ioredis';
 import { Socket } from 'socket.io';
+import { stock_order } from './constants/constants';
 import { ExchangeOrderService } from './exchange_order.service';
 export type MySocket = Socket & { nickname: string };
 
@@ -14,10 +15,12 @@ export class ExchangeOrderGateway {
 
   handleConnection(@ConnectedSocket() socket: MySocket) {
     console.log(`[ ${socket.id} ] connected`);
-    socket.on('startTrading', (data) => {
-      this.redis.subscribe('trade', (data) => {
-        this.exchangeOrderService.createOrder(data)
-        socket.emit('trade', data);
+    socket.on('getPrice', (data) => {
+     const jsonData = JSON.parse(data);
+      this.redis.subscribe(stock_order[`${jsonData['company']}_PUB`], (data) => {
+        this.exchangeOrderService.createOrder(data);
+        console.log(`${jsonData['company']}_price`);
+        socket.emit(`${jsonData['company']}_price`, data);
       });
     });
   }
