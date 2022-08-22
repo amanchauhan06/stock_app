@@ -23,6 +23,15 @@ export class ExchangeOrderGateway {
         socket.emit(`${jsonData['company']}_price`, data);
       });
     });
+    socket.on('getAllPrice', (data) => {
+     const jsonData = JSON.parse(data);
+     console.log(jsonData.company.length);
+      // this.redis.subscribe(stock_order[`${jsonData['company']}_PUB`], (data) => {
+      //   this.exchangeOrderService.createOrder(data);
+      //   console.log(`${jsonData['company']}_price`);
+      //   socket.emit(`${jsonData['company']}_price`, data);
+      // });
+    });
   }
 
   async handleDisconnect(@ConnectedSocket() socket: MySocket) {
