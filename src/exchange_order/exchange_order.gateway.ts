@@ -19,7 +19,7 @@ export class ExchangeOrderGateway {
     console.log(`[ ${socket.id} ] connected`);
     socket.on('getPrice', (data) => {
      const jsonData = JSON.parse(data);
-     console.log(stock_order[jsonData['company']]);
+     console.log(stock_order[jsonData['company'][0]]);
      for (let i = 0; i < jsonData.company.length; i++) {
       this.redis.subscribe(stock_order[`${jsonData['company'][i]}_PUB`], (data) => {
         this.exchangeOrderService.createOrder(data);

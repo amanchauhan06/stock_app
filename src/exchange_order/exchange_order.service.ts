@@ -30,7 +30,7 @@ export class ExchangeOrderService {
     console.log(`This is order data ${orderData}`);
     let order = new OrderEntity();
     order = orderData;
-    order.updated_at = new Date(orderData.updated_at);
+    // order.updated_at = new Date(orderData.updated_at);
     console.log(order);
     return this.orderRepository.save(order);
   }
