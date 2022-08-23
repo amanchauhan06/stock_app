@@ -16,7 +16,10 @@ export class ExchangeOrderService {
 
   startTrading(body: OrderDto) {
     console.log(stock_order[body.company]);
-    return  this.matchingService.send(stock_order[body.company], body);
+    return  this.matchingService.send(stock_order[body.company], body.company);
+  //  return this.matchingService.send('tata_mtr', 'TATA_MOTORS');
+      // this.matchingService.send('irctc', 'IRCTC');
+    // return  this.matchingService.send('mrf', 'MRF');
     // // console.log(value);
     // return 'Completed';
     // // console.log(stock_order[body.company]);
@@ -27,7 +30,7 @@ export class ExchangeOrderService {
     console.log(`This is order data ${orderData}`);
     let order = new OrderEntity();
     order = orderData;
-    order.updated_at = new Date(orderData.updated_at);
+    // order.updated_at = new Date(orderData.updated_at);
     console.log(order);
     return this.orderRepository.save(order);
   }
