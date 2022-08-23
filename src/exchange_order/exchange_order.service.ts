@@ -16,7 +16,10 @@ export class ExchangeOrderService {
 
   startTrading(body: OrderDto) {
     console.log(stock_order[body.company]);
-    return  this.matchingService.send(stock_order[body.company], body);
+    return  this.matchingService.send(stock_order[body.company], body.company);
+  //  return this.matchingService.send('tata_mtr', 'TATA_MOTORS');
+      // this.matchingService.send('irctc', 'IRCTC');
+    // return  this.matchingService.send('mrf', 'MRF');
     // // console.log(value);
     // return 'Completed';
     // // console.log(stock_order[body.company]);
