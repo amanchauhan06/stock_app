@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { MasterAboutEntity } from './master.about.entity';
 import { MasterFundamentalsEntity } from './master.fundamentals.entity';
+import { OrderEntity } from './order.price.entity';
 import { StockDetailEntity } from './stock_detal.entity';
 
 @Entity()
@@ -44,4 +45,6 @@ export class MasterEntity {
   fundamentals: MasterFundamentalsEntity;
   @OneToOne(() => MasterAboutEntity, { cascade: true })
   about: MasterAboutEntity;
+  @OneToMany(() => OrderEntity, (entity) => entity.company)
+  tradePrice: OrderEntity[];
 }

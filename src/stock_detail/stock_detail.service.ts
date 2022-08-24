@@ -5,12 +5,13 @@ import * as csvToJson from 'csvtojson';
 import { Model, Types } from 'mongoose';
 import { dataSource } from 'ormconfig';
 import { distinct } from 'rxjs';
-import { Repository } from 'typeorm';
+import { Between, Equal, MoreThan, Repository } from 'typeorm';
 import { StockDataQueryDTO } from './dto/stock_data.dto';
 import { StockPriceQueryDTO } from './dto/stock_price.dto';
 import { MasterAboutEntity } from './entities/master.about.entity';
 import { MasterEntity } from './entities/master.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
+import { OrderEntity } from './entities/order.price.entity';
 import { StockDetailEntity } from './entities/stock_detal.entity';
 import { StockDetail, StockDetailDocument } from './stock_detail.model';
 
@@ -29,14 +30,16 @@ export class StockDetailService {
     private readonly masterAboutEntity: Repository<MasterAboutEntity>,
     @InjectRepository(StockDetailEntity)
     private readonly stockEntity: Repository<StockDetailEntity>,
+    @InjectRepository(OrderEntity)
+    private readonly orderEntity: Repository<OrderEntity>,
   ) {}
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
       `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/MRF__EQ__NSE__NSE__MINUTE.csv`,
     );
- 
-    let stockData : StockDetailEntity[] = [];
+
+    let stockData: StockDetailEntity[] = [];
 
     let company = await this.masterRepository.findOneBy({
       id: '52874e78-a1bc-46d7-a0e9-7813efaaf8f9',
@@ -57,11 +60,11 @@ export class StockDetailService {
       stockData.push(stockPrice);
     }
     await this.stockEntity.save(stockData, { chunk: 1000 });
-    
+
     /* Migration For the Master CSV */
 
     // const jsonArray = await csvToJson().fromFile(
-      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+    //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
     //   `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/master.csv`,
     // );
     // for (let j = 0; j <jsonArray.length ; j++) {
@@ -140,15 +143,29 @@ export class StockDetailService {
       maxDate = new Date('2020-10-12T09:00:00.000Z');
       switch (duration) {
         case 'day':
-          timeInterval = 1;
-          // timePeriod = 'minute';
-          dateTruncQuery = `(date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / ${timeInterval} * interval '${timeInterval} min')`;
-          minDate = new Date(
-            maxDate.getFullYear(),
-            maxDate.getMonth(),
-            maxDate.getDate(),
+          let anotherDate = new Date(
+            new Date().getFullYear(),
+            new Date().getMonth(),
+            new Date().getDate(),
           );
-          break;
+          let date = anotherDate.toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+          });
+          var orders = await dataSource.getRepository(OrderEntity).findBy({
+            company: Equal(param),
+            updated_at: MoreThan(new Date(date)),
+          });
+          return orders;
+          // timeInterval = 1;
+          // // timePeriod = 'minute';
+          // dateTruncQuery = `(date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / ${timeInterval} * interval '${timeInterval} min')`;
+          // minDate = new Date(
+          //   maxDate.getFullYear(),
+          //   maxDate.getMonth(),
+          //   maxDate.getDate(),
+          // );
+          // break;
+          return;
         case 'week':
           timeInterval = 5;
           // timePeriod = 'minute';
@@ -345,7 +362,7 @@ export class StockDetailService {
             maxDate.getMonth() - 1,
             maxDate.getDate(),
           );
-          
+
           break;
         case 'year':
           // timeInterval = 5;

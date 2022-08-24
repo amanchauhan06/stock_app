@@ -9,6 +9,7 @@ import { StockDetailService } from './stock_detail.service';
 import { StockDetailEntity } from './entities/stock_detal.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
 import { MasterAboutEntity } from './entities/master.about.entity';
+import { OrderEntity } from './entities/order.price.entity';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { MasterAboutEntity } from './entities/master.about.entity';
       MasterEntity,
       StockDetailEntity,
       MasterFundamentalsEntity,
-      MasterAboutEntity
+      MasterAboutEntity,
+      OrderEntity
     ]),
     // MongooseModule.forFeature([
     //   { name: 'stockDetail', schema: StockDetailSchema },

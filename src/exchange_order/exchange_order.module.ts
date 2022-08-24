@@ -19,7 +19,7 @@ import { ExchangeOrderService } from './exchange_order.service';
         transport: Transport.REDIS,
         options: {
           url: process.env.REDIS_URL,
-          // password: process.env.REDIS_PASSWORD,
+          password: process.env.REDIS_PASSWORD,
         },
       },
     ]),
@@ -30,7 +30,7 @@ import { ExchangeOrderService } from './exchange_order.service';
       provide: 'REDIS_OPTIONS',
       useValue: {
         url: process.env.REDIS_URL,
-        // password: process.env.REDIS_PASSWORD,
+        password: process.env.REDIS_PASSWORD,
       },
     },
     {
