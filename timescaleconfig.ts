@@ -32,6 +32,5 @@ export const ormConfigTimeScale: TypeOrmModuleOptions = {
   });
   dataSource.initialize().then(() => {
     {
-      console.log('TimeSeries DataSource initialized');
     }
   });

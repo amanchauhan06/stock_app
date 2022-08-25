@@ -32,6 +32,5 @@ export const dataSource: DataSource = new DataSource({
 });
 dataSource.initialize().then(() => {
   {
-    console.log('DataSource initialized');
   }
 });

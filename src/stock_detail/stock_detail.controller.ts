@@ -19,6 +19,7 @@ import { JwtAuthGuard } from 'src/auth/passport';
 import { StockDataQueryDTO } from './dto/stock_data.dto';
 import { StockDetailService } from './stock_detail.service';
 import { StockPriceQueryDTO } from './dto/stock_price.dto';
+import { Cron } from '@nestjs/schedule';
 
 @ApiHeader({ name: 'app_secret', required: true, description: 'Custom Header' })
 @ApiBearerAuth('defaultBearerAuth')

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ormConfig } from '../ormconfig';
 import { ormConfigTimeScale } from '../timescaleconfig';
@@ -12,6 +13,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
   imports: [
     TypeOrmModule.forRoot(ormConfig),
     TypeOrmModule.forRoot(ormConfigTimeScale),
+    ScheduleModule.forRoot(),
     // MongooseModule.forRoot(process.env.MONGO_DB_CONNECTION_STRING),
     StockDetailModule,
     ExchangeOrderModule,

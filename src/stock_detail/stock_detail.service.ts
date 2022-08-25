@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConnectedSocket } from '@nestjs/websockets';
+import { randomUUID } from 'crypto';
 import * as csvToJson from 'csvtojson';
 import { Model, Types } from 'mongoose';
 import { dataSource } from 'ormconfig';
-import { distinct } from 'rxjs';
-import { Repository } from 'typeorm';
+import { Socket } from 'socket.io';
+import { Between, Equal, MoreThan, Repository } from 'typeorm';
 import { StockDataQueryDTO } from './dto/stock_data.dto';
 import { StockPriceQueryDTO } from './dto/stock_price.dto';
 import { MasterAboutEntity } from './entities/master.about.entity';
 import { MasterEntity } from './entities/master.entity';
 import { MasterFundamentalsEntity } from './entities/master.fundamentals.entity';
+import { OrderEntity } from './entities/order.price.entity';
 import { StockDetailEntity } from './entities/stock_detal.entity';
 import { StockDetail, StockDetailDocument } from './stock_detail.model';
 
 @Injectable()
 export class StockDetailService {
   constructor(
-    // @InjectModel('companyMasterData')
-    // private readonly masterModel: Model<MasterDocument>,
-    // @InjectModel('stockDetail')
-    // private readonly stockDetailModel: Model<StockDetailDocument>,
     @InjectRepository(MasterEntity)
     private readonly masterRepository: Repository<MasterEntity>,
     @InjectRepository(MasterFundamentalsEntity)
@@ -29,14 +28,75 @@ export class StockDetailService {
     private readonly masterAboutEntity: Repository<MasterAboutEntity>,
     @InjectRepository(StockDetailEntity)
     private readonly stockEntity: Repository<StockDetailEntity>,
+    @InjectRepository(OrderEntity)
+    private readonly orderEntity: Repository<OrderEntity>,
   ) {}
+
+  @Cron('0 * * * * *')
+  async mapLiveTradePriceCron(@ConnectedSocket() socket: Socket) {
+    let date = new Date(
+      new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+      }),
+    );
+    let max_date = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+    );
+    max_date.setSeconds(0);
+    let min_date = new Date(
+      max_date.getFullYear(),
+      max_date.getMonth(),
+      max_date.getDate(),
+      max_date.getHours(),
+      max_date.getMinutes() - 1,
+    );
+    let tradePrices = await dataSource
+      .getRepository(OrderEntity)
+      .createQueryBuilder('order')
+      .select([
+        `(date_trunc('minute', updated_at)) as timestamp`,
+        `min(price) as low`,
+        `max(price) as high`,
+        `sum(traded_quantity) as volume`,
+        `(array_agg(last_price))[1] as open`,
+        `(array_agg(price))[count(price)] as close`,
+        `("companyId") as company_id`,
+      ])
+      .andWhere(`updated_at > :minDate`, {
+        minDate: min_date,
+      })
+      .andWhere(`updated_at < :maxDate`, {
+        maxDate: max_date,
+      })
+      .groupBy('timestamp')
+      .addGroupBy('company_id')
+      .getRawMany();
+    let prices: StockDetailEntity[] = [];
+    tradePrices.forEach((price) => {
+      prices.push({
+        id: randomUUID(),
+        timestamp: price.timestamp,
+        low: price.low,
+        high: price.high,
+        volume: price.volume,
+        open: price.open,
+        close: price.close,
+        company: price.company_id,
+      });
+    });
+    await this.stockEntity.save(prices);
+  }
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
       `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/MRF__EQ__NSE__NSE__MINUTE.csv`,
     );
- 
-    let stockData : StockDetailEntity[] = [];
+
+    let stockData: StockDetailEntity[] = [];
 
     let company = await this.masterRepository.findOneBy({
       id: '52874e78-a1bc-46d7-a0e9-7813efaaf8f9',
@@ -57,11 +117,11 @@ export class StockDetailService {
       stockData.push(stockPrice);
     }
     await this.stockEntity.save(stockData, { chunk: 1000 });
-    
+
     /* Migration For the Master CSV */
 
     // const jsonArray = await csvToJson().fromFile(
-      //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
+    //   `/Users/amanchauhan/Desktop/archive/FullDataCsv/TATAMOTORS__EQ__NSE__NSE__MINUTE.csv`,
     //   `/Users/amanchauhan/Screenshots/stockData/FullDataCsv/master.csv`,
     // );
     // for (let j = 0; j <jsonArray.length ; j++) {
@@ -137,9 +197,21 @@ export class StockDetailService {
     let dateTruncQuery: string;
     let startDate: string;
     if (duration) {
+      let date = new Date(
+        new Date().toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+        }),
+      );
       maxDate = new Date('2020-10-12T09:00:00.000Z');
       switch (duration) {
         case 'day':
+          maxDate = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            date.getHours(),
+            date.getMinutes(),
+          );
           timeInterval = 1;
           // timePeriod = 'minute';
           dateTruncQuery = `(date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / ${timeInterval} * interval '${timeInterval} min')`;
@@ -149,6 +221,7 @@ export class StockDetailService {
             maxDate.getDate(),
           );
           break;
+        // return;
         case 'week':
           timeInterval = 5;
           // timePeriod = 'minute';
@@ -229,56 +302,7 @@ export class StockDetailService {
           `;
           break;
       }
-
-      // filter = {
-      //   ...filter,
-      //   ...{ timestamp: { $gt: minDate, $lte: maxDate } },
-      // };
     }
-
-    // var aggregationArray = [];
-    // var project = {
-    //   open: { $round: ['$open', 2] },
-    //   high: { $round: ['$high', 2] },
-    //   low: { $round: ['$low', 2] },
-    //   close: { $round: ['$close', 2] },
-    //   volume: { $round: ['$volume', 0] },
-    //   company: { $toString: '$company' },
-    // };
-
-    // aggregationArray.push({ $match: filter });
-    // if (duration != 'day') {
-    //   aggregationArray.push({
-    //     $group: {
-    //       _id: {
-    //         $dateTrunc: {
-    //           date: '$timestamp',
-    //           unit: timePeriod,
-    //           binSize: timeInterval,
-    //         },
-    //       },
-    //       open: { $first: '$open' },
-    //       high: { $max: '$high' },
-    //       low: { $min: '$low' },
-    //       close: { $last: '$close' },
-    //       volume: { $sum: '$volume' },
-    //       company: { $first: '$company' },
-    //     },
-    //   });
-    // } else {
-    //   project['_id'] = '$timestamp';
-    // }
-
-    // aggregationArray.push(
-    //   {
-    //     $project: project,
-    //   },
-    //   { $sort: { _id: 1 } },
-    // );
-
-    // const stockPrice = dataSource.manager.query(
-    //   `select (date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / 30 * interval '30 min') as t, count(timestamp), min(low) as low, max(high) as high, sum(volume) as volume, min(timestamp) as open_t, max(timestamp) as close_t  from stock_detail_entity where timestamp between '2020-10-12 00:00:00' and '2020-10-13 00:00:00' and "companyId"='39372610-cdf3-4e71-98d6-a48465e2bb52' group by t;`,
-    // );
     const stockPrice = await dataSource
       .getRepository(StockDetailEntity)
       .createQueryBuilder('stock_detail_entity')
@@ -345,7 +369,7 @@ export class StockDetailService {
             maxDate.getMonth() - 1,
             maxDate.getDate(),
           );
-          
+
           break;
         case 'year':
           // timeInterval = 5;

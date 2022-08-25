@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { createClient } from 'redis';
+import { StockDetailEntity } from 'src/stock_detail/entities/stock_detal.entity';
+import { StockDetailModule } from 'src/stock_detail/stock_detail.module';
 import { OrderEntity } from './entities/order_entity';
 import { ExchangeOrderController } from './exchange_order.controller';
 import { ExchangeOrderGateway } from './exchange_order.gateway';
@@ -19,10 +21,11 @@ import { ExchangeOrderService } from './exchange_order.service';
         transport: Transport.REDIS,
         options: {
           url: process.env.REDIS_URL,
-          // password: process.env.REDIS_PASSWORD,
+          password: process.env.REDIS_PASSWORD,
         },
       },
     ]),
+    StockDetailModule
   ],
   controllers: [ExchangeOrderController],
   providers: [
@@ -30,7 +33,7 @@ import { ExchangeOrderService } from './exchange_order.service';
       provide: 'REDIS_OPTIONS',
       useValue: {
         url: process.env.REDIS_URL,
-        // password: process.env.REDIS_PASSWORD,
+        password: process.env.REDIS_PASSWORD,
       },
     },
     {
