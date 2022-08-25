@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,13 +7,16 @@ import { OrderDto } from './dto/order.dto';
 import { OrderEntity } from './entities/order_entity';
 
 @Injectable()
-export class ExchangeOrderService {
+export class ExchangeOrderService implements OnModuleInit{
   constructor(
     @InjectRepository(OrderEntity, 'timeScale')
     private readonly orderRepository: Repository<OrderEntity>,
     @Inject('MATCHING_SERVICE') private readonly matchingService: ClientProxy,
-  ) {}
-
+    ) {}
+    
+    onModuleInit() {
+      console.log(`The module has been initialized.`);
+    }
   startTrading(body: OrderDto) {
     console.log(stock_order[body.company]);
     return  this.matchingService.send(stock_order[body.company], body.company);
