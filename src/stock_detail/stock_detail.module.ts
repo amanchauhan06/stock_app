@@ -29,6 +29,7 @@ import { OrderEntity } from './entities/order.price.entity';
   ],
   controllers: [StockDetailController],
   providers: [StockDetailService],
+  exports: [TypeOrmModule],
 })
 export class StockDetailModule {
   configure(consumer: MiddlewareConsumer) {

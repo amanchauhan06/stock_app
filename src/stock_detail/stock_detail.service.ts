@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConnectedSocket } from '@nestjs/websockets';
+import { randomUUID } from 'crypto';
 import * as csvToJson from 'csvtojson';
 import { Model, Types } from 'mongoose';
 import { dataSource } from 'ormconfig';
-import { distinct } from 'rxjs';
+import { Socket } from 'socket.io';
 import { Between, Equal, MoreThan, Repository } from 'typeorm';
 import { StockDataQueryDTO } from './dto/stock_data.dto';
 import { StockPriceQueryDTO } from './dto/stock_price.dto';
@@ -18,10 +20,6 @@ import { StockDetail, StockDetailDocument } from './stock_detail.model';
 @Injectable()
 export class StockDetailService {
   constructor(
-    // @InjectModel('companyMasterData')
-    // private readonly masterModel: Model<MasterDocument>,
-    // @InjectModel('stockDetail')
-    // private readonly stockDetailModel: Model<StockDetailDocument>,
     @InjectRepository(MasterEntity)
     private readonly masterRepository: Repository<MasterEntity>,
     @InjectRepository(MasterFundamentalsEntity)
@@ -33,6 +31,78 @@ export class StockDetailService {
     @InjectRepository(OrderEntity)
     private readonly orderEntity: Repository<OrderEntity>,
   ) {}
+
+  @Cron('0 * * * * *')
+  async mapLiveTradePriceCron(@ConnectedSocket() socket: Socket) {
+    let date = new Date(
+      new Date().toLocaleString('en-US', {
+        timeZone: 'Asia/Kolkata',
+      }),
+    );
+    let max_date = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+    );
+    max_date.setSeconds(0);
+    let min_date = new Date(
+      max_date.getFullYear(),
+      max_date.getMonth(),
+      max_date.getDate(),
+      max_date.getHours(),
+      max_date.getMinutes() - 1,
+    );
+    let tradePrices = await dataSource
+      .getRepository(OrderEntity)
+      .createQueryBuilder('order')
+      .select([
+        // `((date_trunc('hour', updated_at) + date_part('minute', updated_at)::int / 1 * interval '1 min')) as timestamp`,
+        `(date_trunc('minute', updated_at)) as timestamp`,
+        `min(price) as low`,
+        `max(price) as high`,
+        `sum(traded_quantity) as volume`,
+        `(array_agg(last_price))[1] as open`,
+        `(array_agg(price))[count(price)] as close`,
+        `("companyId") as company_id`,
+      ])
+      .andWhere(`updated_at > :minDate`, {
+        minDate: min_date,
+      })
+      .andWhere(`updated_at < :maxDate`, {
+        maxDate: max_date,
+      })
+      .groupBy('timestamp')
+      .addGroupBy('company_id')
+      .getRawMany();
+    let prices: StockDetailEntity[] = [];
+    tradePrices.forEach((price) => {
+      prices.push({
+        id: randomUUID(),
+        timestamp: price.timestamp,
+        low: price.low,
+        high: price.high,
+        volume: price.volume,
+        open: price.open,
+        close: price.close,
+        company: price.company_id,
+      });
+    });
+    // socket.on('getPrice', async (data) => {
+    //   const jsonData = JSON.parse(data);
+    //   for (let i = 0; i < jsonData.company.length; i++) {
+    //     for (let price in prices) {
+    //       if (prices[price].company === jsonData.company[i]) {
+    //         // socket.emit('price', prices[price]);
+    //         console.log(prices[price]);
+    //       }
+    //     }
+    //     // socket.emit(`${jsonData['company'][i]}_price`, data);
+    //   }
+    // });
+    await this.stockEntity.save(prices);
+  }
 
   async migrateData() {
     const jsonArray = await csvToJson().fromFile(
@@ -140,32 +210,44 @@ export class StockDetailService {
     let dateTruncQuery: string;
     let startDate: string;
     if (duration) {
+      let date = new Date(
+        new Date().toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+        }),
+      );
       maxDate = new Date('2020-10-12T09:00:00.000Z');
       switch (duration) {
         case 'day':
-          let anotherDate = new Date(
-            new Date().getFullYear(),
-            new Date().getMonth(),
-            new Date().getDate(),
-          );
-          let date = anotherDate.toLocaleString('en-US', {
-            timeZone: 'Asia/Kolkata',
-          });
-          var orders = await dataSource.getRepository(OrderEntity).findBy({
-            company: Equal(param),
-            updated_at: MoreThan(new Date(date)),
-          });
-          return orders;
-          // timeInterval = 1;
-          // // timePeriod = 'minute';
-          // dateTruncQuery = `(date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / ${timeInterval} * interval '${timeInterval} min')`;
-          // minDate = new Date(
-          //   maxDate.getFullYear(),
-          //   maxDate.getMonth(),
-          //   maxDate.getDate(),
+          // let anotherDate = new Date(
+          //   new Date().getFullYear(),
+          //   new Date().getMonth(),
+          //   new Date().getDate(),
           // );
-          // break;
-          return;
+          // let date = anotherDate.toLocaleString('en-US', {
+          //   timeZone: 'Asia/Kolkata',
+          // });
+          // var orders = await dataSource.getRepository(OrderEntity).findBy({
+          //   company: Equal(param),
+          //   updated_at: MoreThan(new Date(date)),
+          // });
+          // return orders;
+          maxDate = new Date(
+            date.getFullYear(),
+            date.getMonth(),
+            date.getDate(),
+            date.getHours(),
+            date.getMinutes(),
+          );
+          timeInterval = 1;
+          // timePeriod = 'minute';
+          dateTruncQuery = `(date_trunc('hour', timestamp) + date_part('minute', timestamp)::int / ${timeInterval} * interval '${timeInterval} min')`;
+          minDate = new Date(
+            maxDate.getFullYear(),
+            maxDate.getMonth(),
+            maxDate.getDate(),
+          );
+          break;
+        // return;
         case 'week':
           timeInterval = 5;
           // timePeriod = 'minute';
